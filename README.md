@@ -9,19 +9,19 @@ This repository contains a Python script that identifies Open Reading Frames (OR
 - **Stop Codon Detection**: It detects ORFs by finding start (`ATG`) and stop codons (`TAA`, `TAG`, `TGA`).
 
 ## Usage
-1. **Clone the Repository**:
+1. - **Clone the Repository**:
    ```bash
    git clone https://github.com/Kpmurshid/ORF-finder-using-python.git
    cd ORF-finder-using-python
 
-2. ** Run the Script **:
+2. - ** Run the Script **:
    Use the following command to find ORFs in your DNA sequence:
-
+   ```bash
      python find_orfs.py
 
-3. ** Example **:
+3. - ** Example **:
 Here's how to use the script in Python:
-
+   ```bash
       dna_sequence = "ATGAAATAGTGAATGCTAG"
       orf_dict = find_orfs(dna_sequence)
       
