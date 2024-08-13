@@ -14,12 +14,12 @@ This repository contains a Python script that identifies Open Reading Frames (OR
    git clone https://github.com/Kpmurshid/ORF-finder-using-python.git
    cd ORF-finder-using-python
 
-2. - ** Run the Script **:
+2. - **Run the Script**:
    Use the following command to find ORFs in your DNA sequence:
    ```bash
      python find_orfs.py
 
-3. - ** Example **:
+3. - **Example**:
 Here's how to use the script in Python:
    ```bash
       dna_sequence = "ATGAAATAGTGAATGCTAG"
