@@ -1,70 +1,76 @@
-#Input sequence
-dna_sequence = "ATGAAATAGTGAATGCTAG"
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
-#Function for finding ORF
-def find_orfs(dna_sequence):
-    start_codon = "ATG"
-    stop_codons = ["TAA", "TAG", "TGA"]
-    orfs = {frame: [] for frame in range(1, 7)}
-    codon_to_aa = {
-        "ATA": "I", "ATC": "I", "ATT": "I", "ATG": "M",
-        "ACA": "T", "ACC": "T", "ACG": "T", "ACT": "T",
-        "AAC": "N", "AAT": "N", "AAA": "K", "AAG": "K",
-        "AGC": "S", "AGT": "S", "AGA": "R", "AGG": "R",
-        "CTA": "L", "CTC": "L", "CTG": "L", "CTT": "L",
-        "CCA": "P", "CCC": "P", "CCG": "P", "CCT": "P",
-        "CAC": "H", "CAT": "H", "CAA": "Q", "CAG": "Q",
-        "CGA": "R", "CGC": "R", "CGG": "R", "CGT": "R",
-        "GTA": "V", "GTC": "V", "GTG": "V", "GTT": "V",
-        "GCA": "A", "GCC": "A", "GCG": "A", "GCT": "A",
-        "GAC": "D", "GAT": "D", "GAA": "E", "GAG": "E",
-        "GGA": "G", "GGC": "G", "GGG": "G", "GGT": "G",
-        "TCA": "S", "TCC": "S", "TCG": "S", "TCT": "S",
-        "TTC": "F", "TTT": "F", "TTA": "L", "TTG": "L",
-        "TAC": "Y", "TAT": "Y", "TAA": "*", "TAG": "*",
-        "TGC": "C", "TGT": "C", "TGA": "*", "TGG": "W",
-    }
+class ORFFinder:
+    """A class to identify Open Reading Frames (ORFs) in DNA sequences."""
+    
+    def __init__(self, sequence_record, sequence_type='DNA'):
+        self.sequence_record = sequence_record
+        self.sequence_type = sequence_type
+        self.start_codon = 'ATG' if sequence_type == 'DNA' else 'AUG'
+        self.orfs = {'plus': [], 'minus': []}
+    
+    def _find_orfs_in_strand(self, genetic_code_table, is_reverse, offset, min_length):
+        """Find ORFs in a single strand of the sequence."""
+        orf_records = []
+        strand_seq = self.sequence_record.seq.reverse_complement() if is_reverse else self.sequence_record.seq
+        start_positions = self._find_start_positions(strand_seq)
+        
+        for index, start_pos in enumerate(start_positions, start=1):
+            protein_seq = strand_seq[start_pos:].translate(table=genetic_code_table, to_stop=True)
+            if len(protein_seq) >= min_length:
+                orf_id = f"{self.sequence_record.id}_{index + offset}"
+                end_pos = start_pos + len(protein_seq) * 3
+                description = self._generate_description(start_pos, end_pos, is_reverse)
+                
+                orf_record = SeqRecord(protein_seq, id=orf_id, description=description)
+                orf_records.append(orf_record)
+        
+        return orf_records
+    
+    def _find_start_positions(self, sequence):
+        """Identify all start positions of the ORFs."""
+        positions = []
+        pos = 0
+        while True:
+            pos = sequence.find(self.start_codon, pos)
+            if pos == -1:
+                break
+            positions.append(pos)
+            pos += len(self.start_codon)
+        return positions
+    
+    def _generate_description(self, start, end, is_reverse):
+        """Generate a description for an ORF based on its position and orientation."""
+        length = len(self.sequence_record.seq)
+        if is_reverse:
+            start = length - end + 1
+            end = length - start + len(self.start_codon)
+            return f"[{start} - {end}] (REVERSE SENSE) {self.sequence_record.description}"
+        else:
+            return f"[{start + 1} - {end}] {self.sequence_record.description}"
+    
+    def find_orfs(self, genetic_code_table, min_length):
+        """Find ORFs in both strands of the sequence."""
+        self.orfs['plus'] = self._find_orfs_in_strand(genetic_code_table, is_reverse=False, offset=0, min_length=min_length)
+        self.orfs['minus'] = self._find_orfs_in_strand(genetic_code_table, is_reverse=True, offset=len(self.orfs['plus']), min_length=min_length)
+        return self.orfs
 
-    for frame in range(3):
-        frame_sequence = dna_sequence[frame:]
-        for i in range(0, len(frame_sequence) - 2, 3):
-            codon = frame_sequence[i:i+3]
-            if codon == start_codon:
-                amino_acid_sequence = ""
-                for j in range(i, len(frame_sequence), 3):
-                    codon = frame_sequence[j:j+3]
-                    if codon in stop_codons:
-                        orfs[frame + 1].append((frame_sequence[i:j+3], amino_acid_sequence))
-                        break
-                    amino_acid = codon_to_aa.get(codon, "?")
-                    amino_acid_sequence += amino_acid
+# Example usage
+if __name__ == "__main__":
+    # Example DNA sequence
+    dna_seq = Seq("ATGCGTACATCGCAGATGCAGTACGAGGACTAGCATCACA")
+    record = SeqRecord(dna_seq, id="example_sequence", description="Example DNA sequence")
 
-    reverse_complement = {"A": "T", "T": "A", "C": "G", "G": "C"}
-    reverse_sequence = "".join([reverse_complement[base] for base in dna_sequence[::-1]])
+    # Create ORF Finder instance
+    orf_finder = ORFFinder(record, sequence_type='DNA')
 
-    for frame in range(3):
-        frame_sequence = reverse_sequence[frame:]
-        for i in range(0, len(frame_sequence) - 2, 3):
-            codon = frame_sequence[i:i+3]
-            if codon == start_codon:
-                amino_acid_sequence = ""
-                for j in range(i, len(frame_sequence), 3):
-                    codon = frame_sequence[j:j+3]
-                    if codon in stop_codons:
-                        orfs[frame + 4].append((reverse_sequence[i:j+3], amino_acid_sequence))
-                        break
-                    amino_acid = codon_to_aa.get(codon, "?")
-                    amino_acid_sequence += amino_acid
+    # Find ORFs with genetic code table 1 and minimum length of 10 amino acids
+    orf_results = orf_finder.find_orfs(genetic_code_table=1, min_length=10)
 
-    return orfs
+    # Print ORF results
+    for strand, orfs in orf_results.items():
+        for orf in orfs:
+            print(f"{strand.capitalize()} Strand ORF:", orf.id, orf.description, orf.seq)
 
-#Finding ORF
-orf_dict = find_orfs(dna_sequence)
-
-for frame, orfs in orf_dict.items():
-    print(f"ORF in Frame {frame}:")
-    for idx, (orf, amino_acids) in enumerate(orfs, start=1):
-        print(f"ORF {idx}: DNA: {orf}, Amino Acids: {amino_acids}")
-    print()
-
-
+    print("Total ORFs found:", len(orf_results['plus']) + len(orf_results['minus']))
