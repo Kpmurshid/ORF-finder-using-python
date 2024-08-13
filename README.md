@@ -1,32 +1,24 @@
-# ORF-finder-using-python
+# ORF Finder
 
 ## Description
-This repository contains a Python script that identifies Open Reading Frames (ORFs) in a DNA sequence. The script analyzes all six reading frames and returns the ORFs along with their corresponding amino acid sequences.
+
+The ORF Finder is a Python script designed to detect Open Reading Frames (ORFs) in DNA sequences. This script uses the Biopython library to identify ORFs in both the plus and minus strands of a DNA sequence, based on user-defined parameters. The results include the position and translation of each ORF, which can be useful for genomic studies and protein prediction.
 
 ## Features
-- **Six Reading Frames Analysis**: The script checks all three forward and three reverse reading frames.
-- **Codon Translation**: The script translates DNA codons to their respective amino acids.
-- **Stop Codon Detection**: It detects ORFs by finding start (`ATG`) and stop codons (`TAA`, `TAG`, `TGA`).
 
-## Usage
-1. - **Clone the Repository**:
-   ```bash
-   git clone https://github.com/Kpmurshid/ORF-finder-using-python.git
-   cd ORF-finder-using-python
+- Detect ORFs on both plus and minus DNA strands.
+- Specify genetic code tables for translation.
+- Filter ORFs by minimum length.
+- Outputs ORF details including positions and translations.
 
-2. - **Run the Script**:
-   Use the following command to find ORFs in your DNA sequence:
-   ```bash
-     python find_orfs.py
+## Requirements
 
-3. - **Example**:
-Here's how to use the script in Python:
+- Python 3.x
+- Biopython library
+
+## Installation
+
+1. Install the Biopython library:
+
    ```bash
-      dna_sequence = "ATGAAATAGTGAATGCTAG"
-      orf_dict = find_orfs(dna_sequence)
-      
-      for frame, orfs in orf_dict.items():
-          print(f"ORF in Frame {frame}:")
-          for idx, (orf, amino_acids) in enumerate(orfs, start=1):
-              print(f"ORF {idx}: DNA: {orf}, Amino Acids: {amino_acids}")
-          print()
+   pip install biopython
