@@ -14,3 +14,19 @@ This repository contains a Python script that identifies Open Reading Frames (OR
    git clone https://github.com/Kpmurshid/ORF-finder-using-python.git
    cd ORF-finder-using-python
 
+2. ** Run the Script **:
+   Use the following command to find ORFs in your DNA sequence:
+
+     python find_orfs.py
+
+3. ** Example **:
+Here's how to use the script in Python:
+
+      dna_sequence = "ATGAAATAGTGAATGCTAG"
+      orf_dict = find_orfs(dna_sequence)
+      
+      for frame, orfs in orf_dict.items():
+          print(f"ORF in Frame {frame}:")
+          for idx, (orf, amino_acids) in enumerate(orfs, start=1):
+              print(f"ORF {idx}: DNA: {orf}, Amino Acids: {amino_acids}")
+          print()
